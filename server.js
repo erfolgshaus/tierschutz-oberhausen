@@ -12,6 +12,14 @@ app.use(express.json());
 const bezirke = require('./data/bezirke.json');
 let eintraege = [];
 
+// Debug-Ausgabe aller geladenen Straßen beim Serverstart
+console.log("📋 Geladene Straßennamen aus bezirke.json:");
+for (const bezirk of Object.values(bezirke)) {
+  for (const str of bezirk.straßen) {
+    console.log("–", str.name);
+  }
+}
+
 function normalize(str) {
   return str.toLowerCase()
     .replace(/strasse|str\.|str/g, 'straße')
