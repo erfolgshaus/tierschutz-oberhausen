@@ -13,8 +13,9 @@ const bezirke = require('./data/bezirke.json');
 let eintraege = [];
 
 function normalize(str) {
-  return str.toLowerCase().replace(/strasse|str\.|str/g, 'straße')
-    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+  return str.toLowerCase()
+    .replace(/strasse|str\.|str/g, 'straße')
+    .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü')
     .replace(/\s+/g, '');
 }
 
@@ -43,7 +44,6 @@ app.post('/eintragen', (req, res) => {
   res.send(`Eingetragen in ${bez.bezirksname} (Bezirk ${bez.bezirksnummer})`);
 });
 
-// API für Übersicht und Admin
 app.get('/api/status', (req, res) => {
   const result = {};
   for (const [bezNummer, bezirk] of Object.entries(bezirke)) {
@@ -69,7 +69,6 @@ app.post('/api/admin/delete', (req, res) => {
   res.status(400).send('Ungültiger Index.');
 });
 
-// Sicherstellen, dass Port offen erkannt wird
 app.get("/", (req, res) => {
   res.send("✅ Tierschutz Fraktion Oberhausen läuft auf Port " + PORT);
 });
