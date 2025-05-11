@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Übersicht der Unterschriften – Tierschutz Fraktion Oberhausen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+      margin-bottom: 1.5rem;
+    }
+
+    .bezirk {
+      background: white;
+      margin-bottom: 12px;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .bezirk h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+
+    .bar {
+      height: 20px;
+      background-color: #4CAF50;
+      border-radius: 5px;
+      margin-top: 5px;
+      transition: width 0.3s ease-in-out;
+    }
+
+    .bar-wrapper {
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .counter {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Übersicht der Unterschriften</h1>
+    <div id="uebersicht"></div>
+  </div>
+
+  <script>
+    async function ladeDaten() {
+      const res = await fetch('/api/status');
+      const daten = await res.json();
+      const container = document.getElementById('uebersicht');
+      container.innerHTML = '';
+      for (const [nummer, info] of Object.entries(daten)) {
+        const anteil = Math.min(info.anzahl / 20 * 100, 100);
+        container.innerHTML += `
+          <div class="bezirk">
+            <h2>Bezirk ${nummer}: ${info.name}</h2>
+            <div class="bar-wrapper">
+              <div class="bar" style="width: ${anteil}%"></div>
+            </div>
+            <div class="counter">${info.anzahl} / 20 Unterschriften</div>
+          </div>
+        `;
+      }
+    }
+
+    ladeDaten();
+  </script>
+</body>
+</html>

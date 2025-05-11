@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adminbereich – Tierschutz Fraktion Oberhausen</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+    }
+    #output {
+      margin-top: 2rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Adminbereich</h1>
+  <div>
+    <input type="password" id="pw" placeholder="Admin-Passwort" />
+    <input type="number" id="delIndex" placeholder="Index löschen" />
+    <button onclick="deleteEntry()">Löschen</button>
+  </div>
+  <div id="output">Einträge werden geladen...</div>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      let html = '<h3>Aktueller Stand:</h3>';
+      for (const [num, info] of Object.entries(data)) {
+        html += `<b>Bezirk ${num} – ${info.name}:</b> ${info.anzahl}/20 Unterschriften<br>`;
+      }
+      document.getElementById('output').innerHTML = html;
+    }
+
+    async function deleteEntry() {
+      const password = document.getElementById('pw').value;
+      const index = document.getElementById('delIndex').value;
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ index: parseInt(index), password })
+      });
+      const txt = await res.text();
+      alert(txt);
+      fetchData();
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
