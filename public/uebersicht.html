@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Übersicht der Unterschriften – Tierschutz Fraktion Oberhausen</title>
+  <title>Übersicht – Tierschutz Fraktion Oberhausen</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -30,6 +30,7 @@
       font-size: 1.1rem;
       margin: 0 0 0.5rem 0;
       color: #333;
+      cursor: pointer;
     }
 
     .bar {
@@ -49,6 +50,24 @@
     .counter {
       margin-top: 5px;
       font-weight: bold;
+    }
+
+    .eintraege {
+      margin-top: 10px;
+      display: none;
+      font-size: 0.95rem;
+    }
+
+    .eintraege ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .eintraege li {
+      background: #f0f0f0;
+      margin-bottom: 5px;
+      padding: 6px 10px;
+      border-radius: 5px;
     }
 
     .container {
@@ -71,16 +90,33 @@
       container.innerHTML = '';
       for (const [nummer, info] of Object.entries(daten)) {
         const anteil = Math.min(info.anzahl / 20 * 100, 100);
-        container.innerHTML += `
-          <div class="bezirk">
-            <h2>Bezirk ${nummer}: ${info.name}</h2>
-            <div class="bar-wrapper">
-              <div class="bar" style="width: ${anteil}%"></div>
-            </div>
-            <div class="counter">${info.anzahl} / 20 Unterschriften</div>
-          </div>
+        const div = document.createElement("div");
+        div.className = "bezirk";
+        div.innerHTML = `
+          <h2 onclick="toggleListe('${nummer}')">Bezirk ${nummer}: ${info.name}</h2>
+          <div class="bar-wrapper"><div class="bar" style="width: ${anteil}%"></div></div>
+          <div class="counter">${info.anzahl} / 20 Unterschriften</div>
+          <div class="eintraege" id="liste-${nummer}">Wird geladen...</div>
         `;
+        container.appendChild(div);
       }
+    }
+
+    async function toggleListe(bezirk) {
+      const el = document.getElementById('liste-' + bezirk);
+      if (el.style.display === 'block') {
+        el.style.display = 'none';
+        return;
+      }
+      const res = await fetch('/api/eintraege/' + bezirk);
+      const daten = await res.json();
+      let html = '<ul>';
+      for (const e of daten) {
+        html += `<li>${e.vorname} ${e.nachname}, ${e.strasse} ${e.hausnummer}</li>`;
+      }
+      html += '</ul>';
+      el.innerHTML = html;
+      el.style.display = 'block';
     }
 
     ladeDaten();
