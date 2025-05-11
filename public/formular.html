@@ -1,33 +1,91 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Eintragen</title></head>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Person eintragen – Tierschutz Fraktion Oberhausen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input, button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 6px;
+    }
+    input {
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #43a047;
+    }
+    #meldung {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
 <body>
-<h1>Person für die Unterschrift eintragen</h1>
-<form id="entryForm">
-  <input name="vorname" placeholder="Vorname" required><br>
-  <input name="nachname" placeholder="Nachname" required><br>
-  <input name="strasse" placeholder="Straße" required><br>
-  <input name="hausnummer" placeholder="Hausnummer" required><br>
-  <button type="submit">Eintragen</button>
-</form>
-<p id="meldung"></p>
-<script>
-const form = document.getElementById("entryForm");
-const meldung = document.getElementById("meldung");
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
-  const res = await fetch("/eintragen", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  const text = await res.text();
-  meldung.innerText = text;
-  meldung.style.color = res.ok ? "green" : "red";
-  if (res.ok) form.reset();
-});
-</script>
+  <div class="container">
+    <h1>Person eintragen</h1>
+    <form id="entryForm">
+      <input name="vorname" placeholder="Vorname" required />
+      <input name="nachname" placeholder="Nachname" required />
+      <input name="strasse" placeholder="Straße" required />
+      <input name="hausnummer" placeholder="Hausnummer" required />
+      <button type="submit">Eintragen</button>
+    </form>
+    <p id="meldung"></p>
+  </div>
+  <script>
+    const form = document.getElementById("entryForm");
+    const meldung = document.getElementById("meldung");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const res = await fetch("/eintragen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const text = await res.text();
+      meldung.innerText = text;
+      meldung.style.color = res.ok ? "green" : "red";
+      if (res.ok) form.reset();
+    });
+  </script>
 </body>
 </html>
