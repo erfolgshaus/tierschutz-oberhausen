@@ -15,10 +15,10 @@ let eintraege = [];
 function normalize(str) {
   return str
     .toLowerCase()
-    .replace(/strasse|str\.|str/g, 'straße')
-    .replace(/ss/g, 'ß')
+    .replace(/straße|strasse|str\.|str/g, 'straße')
+    .replace(/-/g, '')
     .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü')
-    .replace(/[^a-zäöüß]/g, '')  // alle Sonderzeichen entfernen
+    .replace(/\s+/g, '')
     .trim();
 }
 
