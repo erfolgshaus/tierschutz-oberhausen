@@ -42,3 +42,38 @@ app.post('/eintragen', (req, res) => {
   eintraege.push({ vorname, nachname, strasse, hausnummer, ...bez });
   res.send(`Eingetragen in ${bez.bezirksname} (Bezirk ${bez.bezirksnummer})`);
 });
+
+// API für Übersicht und Admin
+app.get('/api/status', (req, res) => {
+  const result = {};
+  for (const [bezNummer, bezirk] of Object.entries(bezirke)) {
+    const count = eintraege.filter(e => e.bezirksnummer === bezNummer).length;
+    result[bezNummer] = { name: bezirk.name, anzahl: count };
+  }
+  res.json(result);
+});
+
+app.get('/api/eintraege/:bezirk', (req, res) => {
+  const bez = req.params.bezirk;
+  const data = eintraege.filter(e => e.bezirksnummer === bez);
+  res.json(data);
+});
+
+app.post('/api/admin/delete', (req, res) => {
+  const { index, password } = req.body;
+  if (password !== PASSWORD) return res.status(403).send('Falsches Passwort.');
+  if (index >= 0 && index < eintraege.length) {
+    eintraege.splice(index, 1);
+    return res.status(200).send('Eintrag gelöscht.');
+  }
+  res.status(400).send('Ungültiger Index.');
+});
+
+// Sicherstellen, dass Port offen erkannt wird
+app.get("/", (req, res) => {
+  res.send("✅ Tierschutz Fraktion Oberhausen läuft auf Port " + PORT);
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ Server läuft auf Port ${PORT}`);
+});
