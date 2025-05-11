@@ -1,34 +1,104 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Admin</title></head>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Adminbereich – Tierschutz Fraktion Oberhausen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+    }
+    .pw {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: darkred;
+    }
+  </style>
+</head>
 <body>
-<h1>Adminbereich</h1>
-<input id="pw" placeholder="Passwort" type="password">
-<input id="delIndex" placeholder="Index löschen" type="number">
-<button onclick="del()">Löschen</button>
-<pre id="output">Lade...</pre>
-<script>
-async function lade() {
-  const r = await fetch('/api/status');
-  const d = await r.json();
-  let text = '';
-  for (const [k,v] of Object.entries(d)) {
-    text += `Bezirk ${k} (${v.name}): ${v.anzahl}/20\n`;
-  }
-  document.getElementById("output").innerText = text;
-}
-async function del() {
-  const index = document.getElementById("delIndex").value;
-  const password = document.getElementById("pw").value;
-  const res = await fetch("/api/admin/delete", {
-    method: "POST",
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ index: parseInt(index), password })
-  });
-  alert(await res.text());
-  lade();
-}
-lade();
-</script>
+  <h1>Adminbereich</h1>
+  <div class="pw">
+    <input id="pw" type="password" placeholder="Admin-Passwort" />
+    <button onclick="ladeEintraege()">Einträge laden</button>
+  </div>
+  <div id="ausgabe"></div>
+
+  <script>
+    let password = "";
+
+    async function ladeEintraege() {
+      password = document.getElementById("pw").value;
+      const statusRes = await fetch("/api/status");
+      const status = await statusRes.json();
+      let html = "";
+
+      for (const [bezirk, info] of Object.entries(status)) {
+        html += `<h3>Bezirk ${bezirk}: ${info.name} (${info.anzahl}/20)</h3>`;
+        const res = await fetch("/api/eintraege/" + bezirk);
+        const daten = await res.json();
+
+        if (daten.length === 0) {
+          html += "<p><i>Keine Einträge</i></p>";
+          continue;
+        }
+
+        html += "<table><tr><th>#</th><th>Name</th><th>Adresse</th><th>Aktion</th></tr>";
+        daten.forEach((e, i) => {
+          html += `
+            <tr>
+              <td>${i}</td>
+              <td>${e.vorname} ${e.nachname}</td>
+              <td>${e.strasse} ${e.hausnummer}</td>
+              <td><button onclick="loesche(${i}, '${bezirk}')">Löschen</button></td>
+            </tr>
+          `;
+        });
+        html += "</table>";
+      }
+
+      document.getElementById("ausgabe").innerHTML = html;
+    }
+
+    async function loesche(index, bezirk) {
+      const res = await fetch("/api/admin/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index, password })
+      });
+      const msg = await res.text();
+      alert(msg);
+      ladeEintraege();
+    }
+  </script>
 </body>
 </html>
