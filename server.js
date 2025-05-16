@@ -41,8 +41,18 @@ app.post('/eintragen', (req, res) => {
   const { vorname, nachname, strasse, hausnummer } = req.body;
   const bez = findeBezirk(strasse, hausnummer);
   if (!bez) return res.status(400).send("Adresse keinem Bezirk zuordenbar");
+
+  const exists = eintraege.find(e =>
+    e.vorname.toLowerCase() === vorname.toLowerCase() &&
+    e.nachname.toLowerCase() === nachname.toLowerCase() &&
+    normalize(e.strasse) === normalize(strasse) &&
+    parseInt(e.hausnummer) === parseInt(hausnummer)
+  );
+  if (exists) return res.status(400).send("Diese Person wurde bereits eingetragen.");
+
   const anzahl = eintraege.filter(e => e.bezirksnummer === bez.bezirksnummer).length;
   if (anzahl >= MAX) return res.status(400).send("Bezirk voll");
+
   eintraege.push({ vorname, nachname, strasse, hausnummer, ...bez });
   res.send(`Eingetragen in ${bez.bezirksname} (Bezirk ${bez.bezirksnummer})`);
 });
