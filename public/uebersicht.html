@@ -11,13 +11,11 @@
       margin: 0;
       padding: 20px;
     }
-
     h1 {
       text-align: center;
       color: #4CAF50;
       margin-bottom: 1.5rem;
     }
-
     .bezirk {
       background: white;
       margin-bottom: 12px;
@@ -25,14 +23,12 @@
       border-radius: 10px;
       box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
     }
-
     .bezirk h2 {
       font-size: 1.1rem;
       margin: 0 0 0.5rem 0;
       color: #333;
       cursor: pointer;
     }
-
     .bar {
       height: 20px;
       background-color: #4CAF50;
@@ -40,36 +36,30 @@
       margin-top: 5px;
       transition: width 0.3s ease-in-out;
     }
-
     .bar-wrapper {
       background-color: #e0e0e0;
       border-radius: 5px;
       overflow: hidden;
     }
-
     .counter {
       margin-top: 5px;
       font-weight: bold;
     }
-
     .eintraege {
       margin-top: 10px;
       display: none;
       font-size: 0.95rem;
     }
-
     .eintraege ul {
       list-style: none;
       padding: 0;
     }
-
     .eintraege li {
       background: #f0f0f0;
       margin-bottom: 5px;
       padding: 6px 10px;
       border-radius: 5px;
     }
-
     .container {
       max-width: 600px;
       margin: auto;
@@ -83,6 +73,12 @@
   </div>
 
   <script>
+    function maskiereName(vorname, nachname) {
+      const v = vorname.length > 0 ? vorname[0].toUpperCase() + "xxxx" : "";
+      const n = nachname.length > 0 ? nachname[0].toUpperCase() + "xxxx" : "";
+      return v + " " + n;
+    }
+
     async function ladeDaten() {
       const res = await fetch('/api/status');
       const daten = await res.json();
@@ -112,7 +108,7 @@
       const daten = await res.json();
       let html = '<ul>';
       for (const e of daten) {
-        html += `<li>${e.vorname} ${e.nachname}, ${e.strasse} ${e.hausnummer}</li>`;
+        html += `<li>${maskiereName(e.vorname, e.nachname)}, ${e.strasse} ${e.hausnummer}</li>`;
       }
       html += '</ul>';
       el.innerHTML = html;
