@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -17,11 +16,11 @@ function normalize(str) {
   return str
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/straße|strasse|str\.|str/g, 'straße')
+    .replace(/straße|strasse|str\\.|str/g, 'straße')
     .replace(/-/g, '')
     .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü')
-    .replace(/[^a-z0-9äöüß\s]/g, '')
-    .replace(/\s+/g, ' ')
+    .replace(/[^a-z0-9äöüß\\s]/g, '')
+    .replace(/\\s+/g, ' ')
     .trim();
 }
 
@@ -71,8 +70,7 @@ app.post('/api/admin/delete', (req, res) => {
   res.status(404).send("Eintrag nicht gefunden.");
 });
 
-app.get('
-/api/status', (req, res) => {
+app.get('/api/status', (req, res) => {
   const result = {};
 
   // Alle Bezirke mit 0 starten
@@ -90,13 +88,6 @@ app.get('
     }
   }
 
-  res.json(result);
-
-    if (!result[e.bezirksnummer]) {
-      result[e.bezirksnummer] = { name: e.bezirksname, anzahl: 0 };
-    }
-    result[e.bezirksnummer].anzahl++;
-  }
   res.json(result);
 });
 
