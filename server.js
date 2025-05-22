@@ -1,3 +1,4 @@
+
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -70,10 +71,11 @@ app.post('/api/admin/delete', (req, res) => {
   res.status(404).send("Eintrag nicht gefunden.");
 });
 
-app.get('/api/status', (req, res) => {
+app.get('
+/api/status', (req, res) => {
   const result = {};
 
-  // Alle Bezirke erstmal mit 0 Einträgen
+  // Alle Bezirke mit 0 starten
   for (const [id, bezirk] of Object.entries(bezirke)) {
     result[id] = {
       name: bezirk.name,
@@ -88,6 +90,13 @@ app.get('/api/status', (req, res) => {
     }
   }
 
+  res.json(result);
+
+    if (!result[e.bezirksnummer]) {
+      result[e.bezirksnummer] = { name: e.bezirksname, anzahl: 0 };
+    }
+    result[e.bezirksnummer].anzahl++;
+  }
   res.json(result);
 });
 
