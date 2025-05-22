@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -69,7 +70,7 @@
 <body>
   <div class="container">
     <h1>Übersicht der Unterschriften</h1>
-    <div id="uebersicht"></div>
+    <div id="uebersicht">Wird geladen...</div>
   </div>
 
   <script>
@@ -80,18 +81,24 @@
     }
 
     async function ladeDaten() {
-      const res = await fetch('/api/status');
-      const daten = await res.json();
+      const [statusRes, bezirkeRes] = await Promise.all([
+        fetch('/api/status'),
+        fetch('/data/bezirke.json')
+      ]);
+      const status = await statusRes.json();
+      const bezirke = await bezirkeRes.json();
       const container = document.getElementById('uebersicht');
       container.innerHTML = '';
-      for (const [nummer, info] of Object.entries(daten)) {
-        const anteil = Math.min(info.anzahl / 20 * 100, 100);
+
+      for (const [nummer, bezirk] of Object.entries(bezirke)) {
+        const anzahl = status[nummer]?.anzahl || 0;
+        const anteil = Math.min(anzahl / 20 * 100, 100);
         const div = document.createElement("div");
         div.className = "bezirk";
         div.innerHTML = `
-          <h2 onclick="toggleListe('${nummer}')">Bezirk ${nummer}: ${info.name}</h2>
+          <h2 onclick="toggleListe('${nummer}')">Bezirk ${nummer}: ${bezirk.name}</h2>
           <div class="bar-wrapper"><div class="bar" style="width: ${anteil}%"></div></div>
-          <div class="counter">${info.anzahl} / 20 Unterschriften</div>
+          <div class="counter">${anzahl} / 20 Unterschriften</div>
           <div class="eintraege" id="liste-${nummer}">Wird geladen...</div>
         `;
         container.appendChild(div);

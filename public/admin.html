@@ -1,39 +1,109 @@
+
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>Admin</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Adminbereich</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #222;
+    }
+    h3 {
+      margin-top: 2rem;
+      color: #444;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background: #f1f1f1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 5px;
+    }
+    button {
+      background: #e53935;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #c62828;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+      }
+      li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      button {
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
 <body>
-<h1>Adminbereich</h1>
-<div id="ausgabe">Wird geladen...</div>
-<script>
-async function lade() {
-  const res = await fetch('/api/status');
-  const status = await res.json();
-  let html = '';
-  for (const [bez, info] of Object.entries(status)) {
-    html += `<h3>Bezirk ${bez} (${info.name}) – ${info.anzahl}/20</h3>`;
-    const r = await fetch('/api/eintraege/' + bez);
-    const daten = await r.json();
-    if (daten.length === 0) {
-      html += "<p><i>Keine Einträge</i></p>"; continue;
+  <div class="container">
+    <h1>Adminbereich</h1>
+    <div id="ausgabe">Wird geladen...</div>
+  </div>
+
+  <script>
+    async function lade() {
+      const res = await fetch('/api/status');
+      const status = await res.json();
+      let html = '';
+      for (const [bez, info] of Object.entries(status)) {
+        const r = await fetch('/api/eintraege/' + bez);
+        const daten = await r.json();
+        if (daten.length === 0) continue;
+        html += `<h3>Bezirk ${bez} (${info.name}) – ${info.anzahl}/20</h3><ul>`;
+        for (const e of daten) {
+          html += `<li>${e.vorname} ${e.nachname}, ${e.strasse} ${e.hausnummer} 
+                    <button onclick="loesche('${e.id}')">🗑</button></li>`;
+        }
+        html += "</ul>";
+      }
+      document.getElementById("ausgabe").innerHTML = html;
     }
-    html += "<ul>";
-    for (const e of daten) {
-      html += `<li>${e.vorname} ${e.nachname}, ${e.strasse} ${e.hausnummer} <button onclick="loesche('${e.id}')">🗑</button></li>`;
+
+    async function loesche(id) {
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      alert(await res.text());
+      lade();
     }
-    html += "</ul>";
-  }
-  document.getElementById("ausgabe").innerHTML = html;
-}
-async function loesche(id) {
-  const res = await fetch('/api/admin/delete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id })
-  });
-  alert(await res.text());
-  lade();
-}
-lade();
-</script>
+
+    lade();
+  </script>
 </body>
 </html>
