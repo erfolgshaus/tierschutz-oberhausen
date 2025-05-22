@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -73,12 +72,22 @@ app.post('/api/admin/delete', (req, res) => {
 
 app.get('/api/status', (req, res) => {
   const result = {};
-  for (const e of eintraege) {
-    if (!result[e.bezirksnummer]) {
-      result[e.bezirksnummer] = { name: e.bezirksname, anzahl: 0 };
-    }
-    result[e.bezirksnummer].anzahl++;
+
+  // Alle Bezirke erstmal mit 0 Einträgen
+  for (const [id, bezirk] of Object.entries(bezirke)) {
+    result[id] = {
+      name: bezirk.name,
+      anzahl: 0
+    };
   }
+
+  // Dann Einträge zählen
+  for (const e of eintraege) {
+    if (result[e.bezirksnummer]) {
+      result[e.bezirksnummer].anzahl++;
+    }
+  }
+
   res.json(result);
 });
 
