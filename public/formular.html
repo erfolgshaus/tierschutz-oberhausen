@@ -76,15 +76,25 @@
       e.preventDefault();
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
-      const res = await fetch("/eintragen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      const text = await res.text();
-      meldung.innerText = text;
-      meldung.style.color = res.ok ? "green" : "red";
-      if (res.ok) form.reset();
+      try {
+        const res = await fetch("/api/eintragen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (res.ok) {
+          meldung.innerText = "Erfolgreich eingetragen!";
+          meldung.style.color = "green";
+          form.reset();
+        } else {
+          meldung.innerText = result.error || "Fehler beim Eintragen.";
+          meldung.style.color = "red";
+        }
+      } catch (err) {
+        meldung.innerText = "Verbindungsfehler!";
+        meldung.style.color = "red";
+      }
     });
   </script>
 </body>
