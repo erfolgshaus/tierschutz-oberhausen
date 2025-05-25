@@ -1,32 +1,19 @@
+
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PASSWORD = process.env.ADMIN_PASSWORD || 'Tierschutz2025';
 const MAX = 20;
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/data', express.static(path.join(__dirname, 'data')));
+app.use('/data', express.static(path.join(__dirname, 'data'))); // <-- NEU
 app.use(express.json());
 
 const bezirke = require('./data/bezirke.json');
-const datenPfad = './data/eintraege.json';
 
-// Datei eintraege.json beim Start laden oder erstellen
 let eintraege = [];
-if (!fs.existsSync(datenPfad)) {
-  fs.writeFileSync(datenPfad, '[]', 'utf-8');
-  console.log("Datei eintraege.json wurde erstellt.");
-}
-try {
-  eintraege = JSON.parse(fs.readFileSync(datenPfad, 'utf-8'));
-} catch (err) {
-  console.error("Fehler beim Laden der Einträge:", err);
-  eintraege = [];
-}
 
-// Hilfsfunktionen
 function normalize(str) {
   return str
     .toLowerCase()
@@ -54,7 +41,6 @@ function findeBezirk(strasse, hausnummer) {
   return null;
 }
 
-// Eintragen-Route
 app.post('/eintragen', (req, res) => {
   const { vorname, nachname, strasse, hausnummer } = req.body;
   const bez = findeBezirk(strasse, hausnummer);
@@ -71,16 +57,41 @@ app.post('/eintragen', (req, res) => {
   const anzahl = eintraege.filter(e => e.bezirksnummer === bez.bezirksnummer).length;
   if (anzahl >= MAX) return res.status(400).send("Bezirk voll");
 
-  const neuerEintrag = { vorname, nachname, strasse, hausnummer, ...bez };
-  eintraege.push(neuerEintrag);
-
-  // In Datei speichern
-  fs.writeFileSync(datenPfad, JSON.stringify(eintraege, null, 2), 'utf-8');
-
-  res.status(200).json(neuerEintrag);
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  eintraege.push({ id, vorname, nachname, strasse, hausnummer, ...bez });
+  console.log(`✅ Eingetragen: ${vorname} ${nachname} → ${bez.bezirksname}`);
+  res.send(`Eingetragen in ${bez.bezirksname} (Bezirk ${bez.bezirksnummer})`);
 });
 
-// Start
+app.post('/api/admin/delete', (req, res) => {
+  const { id } = req.body;
+  const index = eintraege.findIndex(e => e.id === id);
+  if (index !== -1) {
+    eintraege.splice(index, 1);
+    return res.status(200).send("Eintrag gelöscht.");
+  }
+  res.status(404).send("Eintrag nicht gefunden.");
+});
+
+app.get('/api/status', (req, res) => {
+  const result = {};
+  for (const [id, bezirk] of Object.entries(bezirke)) {
+    result[id] = { name: bezirk.name, anzahl: 0 };
+  }
+  for (const e of eintraege) {
+    if (result[e.bezirksnummer]) {
+      result[e.bezirksnummer].anzahl++;
+    }
+  }
+  res.json(result);
+});
+
+app.get('/api/eintraege/:bezirk', (req, res) => {
+  const bezirk = req.params.bezirk;
+  const daten = eintraege.filter(e => e.bezirksnummer === bezirk);
+  res.json(daten);
+});
+
 app.listen(PORT, () => {
-  console.log(`Server läuft auf Port ${PORT}`);
+  console.log(`🚀 Server läuft auf http://localhost:${PORT}`);
 });
